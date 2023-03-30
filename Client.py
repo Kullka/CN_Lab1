@@ -2,7 +2,7 @@ from tkinter import *
 import tkinter.messagebox
 from PIL import Image, ImageTk
 import socket, threading, sys, traceback, os
-
+import time
 from RtpPacket import RtpPacket
 
 CACHE_FILE_NAME = "cache-"
@@ -18,7 +18,10 @@ class Client:
 	PLAY = 1
 	PAUSE = 2
 	TEARDOWN = 3
-	
+
+	checkSocketIsOpen = FALSE
+	checkPlay = FALSE
+
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
@@ -96,6 +99,11 @@ class Client:
 		
 	def connectToServer(self):
 		"""Connect to the Server. Start a new RTSP/TCP session."""
+		self.rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		try:
+			self.rtspSocket.connect((self.serverAddr, self.serverPort))
+		except:
+			tkinter.messagebox.showwarning('Connection Failed', 'Connect to \'%s\'  failed.' %self.serverAddr)
 	#TODO
 	
 	def sendRtspRequest(self, requestCode):
@@ -129,11 +137,16 @@ class Client:
 		#-------------
 		# Create a new datagram socket to receive RTP packets from the server
 		# self.rtpSocket = ...
-		
+
 		# Set the timeout value of the socket to 0.5sec
 		# ...
-		
-
+		self.checkSocketIsOpen = TRUE
+		self.rtspSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
+		try:
+			self.rtspSocket.bind(('', self.rtpPort))
+			self.state = self.READY
+		except:
+			tkinter.messagebox.showwarning('Unable to bind', 'Unable to bind port=%d' %self.rtpPort)
 	def handler(self):
 		"""Handler on explicitly closing the GUI window."""
 		#TODO
