@@ -21,7 +21,7 @@ class Client:
 
 	checkSocketIsOpen = FALSE
 	checkPlay = FALSE
-
+	buffer = [None] * 1024
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
@@ -58,7 +58,7 @@ class Client:
 		self.pause["text"] = "Pause"
 		self.pause["command"] = self.pauseMovie
 		self.pause.grid(row=1, column=2, padx=2, pady=2)
-		
+
 		# Create Teardown button
 		self.teardown = Button(self.master, width=20, padx=3, pady=3)
 		self.teardown["text"] = "Teardown"
@@ -108,24 +108,38 @@ class Client:
 	
 	def sendRtspRequest(self, requestCode):
 		"""Send RTSP request to the server."""
-		if requestCode == self.SETUP:
-			#assert
-		elif requestCode == self.PLAY:
-			#
-		elif requestCode == self.PAUSE:
-			#
+		if requestCode == self.SETUP and self.state == self.INIT:
+			self.rtspSeq = self.rtspSeq + 1
+			message = "C: SETUP " + self.fileName + " RTSP/1.0 \
+			C: CSeq: " + str(self.rtspSeq) + "C: Transport: RTP/UDP; client_port = " + str(self.rtpPort)
+			self.rtspSocket.sendto(message.encode(), (self.serverAddr, self.serverPort))
+			self.state = self.READY
+		elif requestCode == self.PLAY and self.state == self.READY:
+			self.rtspSeq = self.rtspSeq + 1
+			message = "C: PLAY " + self.fileName + " RTSP/1.0 \
+			C: CSeq: " + str(self.rtspSeq) + "C: Session: " + str(self.sessionId)
+			self.rtspSocket.sendto(message.encode(), (self.serverAddr, self.serverPort))
+			self.state = self.PLAYING
+		elif requestCode == self.PAUSE and self.state == self.PLAYING:
+			self.rtspSeq = self.rtspSeq + 1
+			message = "C: PAUSE " + self.fileName + " RTSP/1.0 \
+			C: CSeq: " + str(self.rtspSeq) + "C: Session: " + str(self.sessionId)
+			self.rtspSocket.sendto(message.encode(), (self.serverAddr, self.serverPort))
+			self.state = self.PLAYING
 		elif requestCode == self.TEARDOWN:
-			#
+			self.rtspSeq = self.rtspSeq + 1
+			message = "C: TEARDOWN " + self.fileName + " RTSP/1.0 \
+			C: CSeq: " + str(self.rtspSeq) + "C: Session: " + str(self.sessionId)
+			self.rtspSocket.sendto(message.encode(), (self.serverAddr, self.serverPort))
+			self.state = self.INIT
 		#-------------
 		# TO COMPLETE
 		#-------------
-		
-	
-	
+
 	def recvRtspReply(self):
 		"""Receive RTSP reply from the server."""
 		#TODO
-	
+
 	def parseRtspReply(self, data):
 		"""Parse the RTSP reply from the server."""
 		#TODO
