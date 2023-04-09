@@ -24,7 +24,7 @@ class Client:
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
-		self.master.protocol("WM_DELETE_WINDOW", self.handler)
+		self.master.wm_protocol("WM_DELETE_WINDOW", self.handler)
 		self.createWidgets()
 		self.serverAddr = serveraddr
 		self.serverPort = int(serverport)
