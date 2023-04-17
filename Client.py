@@ -78,6 +78,8 @@ class Client:
 		"""Teardown button handler."""
 		if self.checkIsPlaying:
 			self.sendRtspRequest(self.TEARDOWN)
+			# self.master.destroy()
+			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
 
 			self.rtspSeq = 0
 			self.sessionId = 0
@@ -163,6 +165,7 @@ class Client:
 		message = ""
 		if self.checkSocketIsOpen:
 			if requestCode == self.SETUP and self.state == self.INIT:
+				threading.Thread(target=self.recvRtspReply).start()
 				self.rtspSeq = self.rtspSeq + 1
 
 				message = "SETUP " + self.fileName + " RTSP/1.0\n\
@@ -223,7 +226,7 @@ class Client:
 		lines = data.split('\n')
 		seqNum = lines[1].split(' ')[1]
 		if seqNum == self.rtspSeq:
-			session = lines[2].split(' ')[1]
+			session = int(lines[2].split(' ')[1])
 			if self.sessionId == 0:
 				self.sessionId = session
 
@@ -271,7 +274,9 @@ class Client:
 			if self.checkSocketIsOpen:
 				self.rtpSocket.shutdown(socket.SHUT_RDWR)
 				self.rtpSocket.close()
+
 			self.master.destroy()
+			self.exitClient()
 			sys.exit(0)
 
 		#TODO
