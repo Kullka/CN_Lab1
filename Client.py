@@ -72,6 +72,7 @@ class Client:
 		"""Setup button handler."""
 		if self.state == self.INIT:
 			self.sendRtspRequest(self.SETUP)
+			print("SETUP")
 	#TODO
 	
 	def exitClient(self):
@@ -98,6 +99,7 @@ class Client:
 		"""Pause button handler."""
 		if self.state == self.PLAYING:
 			self.sendRtspRequest(self.PAUSE)
+			print("PAUSE")
 	#TODO
 	
 	def playMovie(self):
@@ -108,6 +110,7 @@ class Client:
 			self.playEvent = threading.Event()
 			self.playEvent.clear()
 			self.sendRtspRequest(self.PLAY)
+			print("PLAY")
 	#TODO
 	
 	def listenRtp(self):		
@@ -163,40 +166,32 @@ class Client:
 	def sendRtspRequest(self, requestCode):
 		"""Send RTSP request to the server."""
 		message = ""
-		if self.checkSocketIsOpen:
-			if requestCode == self.SETUP and self.state == self.INIT:
-				threading.Thread(target=self.recvRtspReply).start()
-				self.rtspSeq = self.rtspSeq + 1
+		# if self.checkSocketIsOpen:
+		if requestCode == self.SETUP and self.state == self.INIT:
+			threading.Thread(target=self.recvRtspReply).start()
+			self.rtspSeq = self.rtspSeq + 1
 
-				message = "SETUP " + self.fileName + " RTSP/1.0\n\
-				CSeq: " + str(self.rtspSeq) + "\n\
-				Transport: RTP/UDP; client_port= " + str(self.rtpPort)
+			message = "SETUP " + self.fileName + " RTSP/1.0\nCSeq: " + str(self.rtspSeq) + "\nTransport: RTP/UDP; client_port= " + str(self.rtpPort)
+			print(message)
+			self.requestSent = self.SETUP
+		elif requestCode == self.PLAY and self.state == self.READY:
+			self.rtspSeq = self.rtspSeq + 1
 
-				self.requestSent = self.SETUP
-			elif requestCode == self.PLAY and self.state == self.READY:
-				self.rtspSeq = self.rtspSeq + 1
+			message = "PLAY " + self.fileName + " RTSP/1.0\nCSeq: " + str(self.rtspSeq) + "\nSession: " + str(self.sessionId)
+			print(message)
+			self.requestSent = self.PLAY
+		elif requestCode == self.PAUSE and self.state == self.PLAYING:
+			self.rtspSeq = self.rtspSeq + 1
 
-				message = "PLAY " + self.fileName + " RTSP/1.0\n\
-				CSeq: " + str(self.rtspSeq) + "\n\
-				Session: " + str(self.sessionId)
+			message = "PAUSE " + self.fileName + " RTSP/1.0\nCSeq: " + str(self.rtspSeq) + "\nSession: " + str(self.sessionId)
+			print(message)
+			self.requestSent = self.PAUSE
+		elif requestCode == self.TEARDOWN:
+			self.rtspSeq = self.rtspSeq + 1
 
-				self.requestSent = self.PLAY
-			elif requestCode == self.PAUSE and self.state == self.PLAYING:
-				self.rtspSeq = self.rtspSeq + 1
-
-				message = "PAUSE " + self.fileName + " RTSP/1.0\n\
-				CSeq: " + str(self.rtspSeq) + "\n\
-				Session: " + str(self.sessionId)
-
-				self.requestSent = self.PAUSE
-			elif requestCode == self.TEARDOWN:
-				self.rtspSeq = self.rtspSeq + 1
-
-				message = "TEARDOWN " + self.fileName + " RTSP/1.0\n\
-				CSeq: " + str(self.rtspSeq) + "\n\
-				Session: " + str(self.sessionId)
-
-				self.requestSent = self.TEARDOWN
+			message = "TEARDOWN " + self.fileName + " RTSP/1.0\nCSeq: " + str(self.rtspSeq) + "\nSession: " + str(self.sessionId)
+			print(message)
+			self.requestSent = self.TEARDOWN
 				# self.rtspSocket.close()
 		self.rtspSocket.sendto(message.encode(), (self.serverAddr, self.serverPort))
 		#-------------
@@ -206,9 +201,9 @@ class Client:
 	def recvRtspReply(self):
 		"""Receive RTSP reply from the server."""
 		while True:
-			replyMessage = self.rtspSocket.recvfrom(1024)
+			replyMessage = self.rtspSocket.recv(1024)
 			if replyMessage:
-				self.parseRtspReply(replyMessage.decode("UTF-8"))
+				self.parseRtspReply(replyMessage.decode("utf-8"))
 			if self.requestSent == self.TEARDOWN:
 				self.rtspSocket.shutdown(socket.SHUT_RDWR)
 				self.rtspSocket.close()
