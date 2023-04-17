@@ -19,7 +19,7 @@ class Client:
 	PAUSE = 2
 	TEARDOWN = 3
 
-	checkSocketIsOpen = FALSE
+	# checkSocketIsOpen = FALSE
 	checkIsPlaying = FALSE
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
@@ -118,6 +118,7 @@ class Client:
 		while True:
 			try:
 				data = self.rtpSocket.recv(20480)
+				# print(data)
 				if data:
 					rtpPacket = RtpPacket()
 					rtpPacket.decode(data)
@@ -128,10 +129,11 @@ class Client:
 						self.frameNbr = currentFrameNumber
 						self.updateMovie(self.writeFrame(rtpPacket.getPayload()))
 			except:
+				print("Not get rtpPacket")
 				if self.playEvent.isSet():
 					break
 				if self.teardownAcked == 1:
-					self.checkSocketIsOpen = False
+					# self.checkSocketIsOpen = False
 					self.rtpSocket.shutdown(socket.SHUT_RDWR)
 					self.rtpSocket.close()
 					break
@@ -204,6 +206,7 @@ class Client:
 			replyMessage = self.rtspSocket.recv(1024)
 			if replyMessage:
 				self.parseRtspReply(replyMessage.decode("utf-8"))
+				print(replyMessage.decode("utf-8"))
 			if self.requestSent == self.TEARDOWN:
 				self.rtspSocket.shutdown(socket.SHUT_RDWR)
 				self.rtspSocket.close()
@@ -219,15 +222,18 @@ class Client:
 		# else:
 		# 	tkinter.messagebox.showwarning('Request Failed', 'Send request to \'%s\'  failed.' %self.serverAddr)
 		lines = data.split('\n')
-		seqNum = lines[1].split(' ')[1]
+		seqNum = int(lines[1].split(' ')[1])
+		print(seqNum)
+		print(self.rtspSeq)
 		if seqNum == self.rtspSeq:
 			session = int(lines[2].split(' ')[1])
 			if self.sessionId == 0:
 				self.sessionId = session
 
+			print([session, self.sessionId])
 			if session == self.sessionId:
-				replyCode = lines[0].split(' ')[1]
-				if replyCode == '200':
+				replyCode = int(lines[0].split(' ')[1])
+				if replyCode == 200:
 					if self.requestSent == self.SETUP and self.state == self.INIT:
 						self.state = self.READY
 						self.openRtpPort()
@@ -252,11 +258,12 @@ class Client:
 		# Set the timeout value of the socket to 0.5sec
 		# ...
 		self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
-		self.checkSocketIsOpen = TRUE
+		# self.checkSocketIsOpen = TRUE
 		self.rtpSocket.settimeout(0.5)
 		try:
 			self.rtpSocket.bind(('', self.rtpPort))
 			self.state = self.READY
+			print("Open RTP Port successfully")
 		except:
 			tkinter.messagebox.showwarning('Unable to bind', 'Unable to bind port=%d' %self.rtpPort)
 	def handler(self):
@@ -266,7 +273,7 @@ class Client:
 		if answer:
 			if self.state != self.TEARDOWN:
 				self.sendRtspRequest(self.TEARDOWN)
-			if self.checkSocketIsOpen:
+			# if self.checkSocketIsOpen:
 				self.rtpSocket.shutdown(socket.SHUT_RDWR)
 				self.rtpSocket.close()
 
