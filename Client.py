@@ -19,8 +19,9 @@ class Client:
 	PAUSE = 2
 	TEARDOWN = 3
 
-	# checkSocketIsOpen = FALSE
+	checkSocketIsOpen = FALSE
 	checkIsPlaying = FALSE
+	counter = 0
 	# Initiation..
 	def __init__(self, master, serveraddr, serverport, rtpport, filename):
 		self.master = master
@@ -36,7 +37,7 @@ class Client:
 		self.teardownAcked = 0
 		self.connectToServer()
 		self.frameNbr = 0
-		
+		self.counter = 0
 	# THIS GUI IS JUST FOR REFERENCE ONLY, STUDENTS HAVE TO CREATE THEIR OWN GUI 	
 	def createWidgets(self):
 		"""Build GUI."""
@@ -65,7 +66,7 @@ class Client:
 		self.teardown.grid(row=1, column=3, padx=2, pady=2)
 		
 		# Create a label to display the movie
-		self.label = Label(self.master, height=19)
+		self.label = Label(self.master, height=19, bg="#3eb489")
 		self.label.grid(row=0, column=0, columnspan=4, sticky=W+E+N+S, padx=5, pady=5) 
 	
 	def setupMovie(self):
@@ -80,13 +81,17 @@ class Client:
 		if self.checkIsPlaying:
 			self.sendRtspRequest(self.TEARDOWN)
 			# self.master.destroy()
-			os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
-
+			# os.remove(CACHE_FILE_NAME + str(self.sessionId) + CACHE_FILE_EXT)
+			for i in os.listdir():
+				if i.find(CACHE_FILE_NAME) == 0:
+					os.remove(i)
+			time.sleep(1)
 			self.rtspSeq = 0
 			self.sessionId = 0
 			self.requestSent = -1
 			self.teardownAcked = 0
 			self.frameNbr = 0
+			self.counter = 0
 			self.checkIsPlaying = False
 			self.connectToServer()
 			self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -123,17 +128,24 @@ class Client:
 					rtpPacket = RtpPacket()
 					rtpPacket.decode(data)
 					currentFrameNumber = rtpPacket.seqNum()
-					# payload = rtpPacket.getPayload()
-					# timeStamp = rtpPacket.timestamp()
+					try:
+						if self.frameNbr+1 != rtpPacket.seqNum():
+							self.counter += 1
+							print('!' * 60 + "\nPACKET LOSS\n" + '!' * 60)
+						currentFrameNumber = rtpPacket.seqNum()
+					except:
+						print("seqNum() Loi \n")
+						traceback.print_exc(file=sys.stdout)
+						print("\n")
 					if currentFrameNumber > self.frameNbr:
 						self.frameNbr = currentFrameNumber
 						self.updateMovie(self.writeFrame(rtpPacket.getPayload()))
 			except:
-				print("Not get rtpPacket")
+				# print("Not get rtpPacket")
 				if self.playEvent.isSet():
 					break
 				if self.teardownAcked == 1:
-					# self.checkSocketIsOpen = False
+					self.checkSocketIsOpen = False
 					self.rtpSocket.shutdown(socket.SHUT_RDWR)
 					self.rtpSocket.close()
 					break
@@ -258,7 +270,7 @@ class Client:
 		# Set the timeout value of the socket to 0.5sec
 		# ...
 		self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # IPv4, UDP
-		# self.checkSocketIsOpen = TRUE
+		self.checkSocketIsOpen = TRUE
 		self.rtpSocket.settimeout(0.5)
 		try:
 			self.rtpSocket.bind(('', self.rtpPort))
@@ -273,12 +285,12 @@ class Client:
 		if answer:
 			if self.state != self.TEARDOWN:
 				self.sendRtspRequest(self.TEARDOWN)
-			# if self.checkSocketIsOpen:
+			if self.checkSocketIsOpen:
 				self.rtpSocket.shutdown(socket.SHUT_RDWR)
 				self.rtpSocket.close()
 
 			self.master.destroy()
-			self.exitClient()
+			# self.exitClient()
 			sys.exit(0)
 
 		#TODO
