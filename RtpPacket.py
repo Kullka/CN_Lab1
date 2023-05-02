@@ -49,9 +49,8 @@ class RtpPacket:
 		# Get the payload from the argument
 		# self.payload = ...
 
-		self.header = bytearray(byteStream[:HEADER_SIZE])
-		self.payload = byteStream[HEADER_SIZE:]
-	
+		self.header = header
+		self.payload = payload
 	def version(self):
 		"""Return RTP version."""
 		return int(self.header[0] >> 6)
