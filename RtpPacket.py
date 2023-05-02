@@ -2,7 +2,7 @@ import sys
 from time import time
 HEADER_SIZE = 12
 
-class RtpPacket:	
+class RtpPacket:
 	header = bytearray(HEADER_SIZE)
 	
 	def __init__(self):
@@ -24,14 +24,12 @@ class RtpPacket:
 
 		# header[0] = ...
 		# ...
-		header[0] = (header[
-						 0] | version << 6) & 0xC0  # đưa 2 bit của version thành 2 bit đầu tiên, tại sao phải and 11 000 000 ? -> Solution: Tránh để bị tràn bit
+		header[0] = (header[0] | version << 6) & 0xC0  # đưa 2 bit của version thành 2 bit đầu tiên, tại sao phải and 11 000 000 ? -> Solution: Tránh để bị tràn bit
 		header[0] = (header[0] | padding << 5)  # đưa 1 bit của padding thành bit thứ 3
 		header[0] = (header[0] | extension << 4)  # đưa 1 bit extension thành bit thứ 4
 		header[0] = (header[0] | (cc & 0x0F))  # tại sao phải & bit 1111 ? -> Solution: Tránh để bị tràn bit
 		# header[1] = 8 bit
-		header[1] = (header[
-						 1] | marker << 7)  # đưa 1 bit của marker thành 1 bit thứ nhất, và ở đây ta không hê làm cc gì nữa hết ! -> Ques: tại sao không tránh trường hợp tràn bit ?
+		header[1] = (header[1] | marker << 7)  # đưa 1 bit của marker thành 1 bit thứ nhất, và ở đây ta không hê làm cc gì nữa hết ! -> Ques: tại sao không tránh trường hợp tràn bit ?
 		header[1] = (header[1] | (pt & 0x7f))  # tại sao phải nhân cho 0x7f ? Để tránh tràn
 		# header[2] 8 bit + header[3] 8 bit
 		header[2] = (seqnum & 0xFF00) >> 8  # lấy 8 bit đầu của seq number
@@ -51,6 +49,7 @@ class RtpPacket:
 
 		self.header = header
 		self.payload = payload
+
 	def version(self):
 		"""Return RTP version."""
 		return int(self.header[0] >> 6)

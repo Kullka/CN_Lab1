@@ -539,5 +539,3 @@ class ClientExtend:
         Lb2.insert(10, "Average Jitter: %.3fms" % ((self.totalJitter / self.packets) * 1000))
         Lb2.pack()
         # top1.mainloop()
-
-
