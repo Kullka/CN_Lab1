@@ -64,70 +64,62 @@ class ClientExtend:
         self.totalJitter = 0
         self.arrivalTimeofPreviousPacket = 0
         self.lastPacketSpacing = 0
+        self.isSetup = 0  # Flag check setup
 
         # self.setupMovie()
 
     def createWidgets(self):
         """Build GUI."""
         # Create Play button
-        self.start = Button(self.master, width=15, padx=3, pady=3)
-        self.start["text"] = "Play"
-        self.start["bg"] = "#56ff6d"
-        self.start["fg"] = "black"
-        self.start["command"] = self.playMovie
-        self.start.grid(row=2, column=0, padx=2, pady=2)
-
-        # Create Pause button
-        self.pause = Button(self.master, width=15, padx=3, pady=3)
-        self.pause["text"] = "Pause"
-        self.pause["bg"] = "#f8ed54"
-        self.pause["fg"] = "black"
-        self.pause["command"] = self.pauseMovie
-        self.pause.grid(row=2, column=1, padx=2, pady=2)
-
-        # Create Teardown button
-        self.stop = Button(self.master, width=15, padx=3, pady=3)
-        self.stop["text"] = "Stop"
+        self.stop = Button(self.master, width=10, padx=3, pady=3, bg="#FC8585")
+        self.stop["text"] = "⬛"
         self.stop["command"] = self.resetMovie
-        self.stop["bg"] = "#e05927"
-        self.stop["fg"] = "black"
-        self.stop.grid(row=2, column=2, padx=2, pady=2)
+        self.stop.grid(row=2, column=0, padx=2, pady=2)
 
-        # Create Setup button
-        self.describe = Button(self.master, width=15, padx=3, pady=3)
-        self.describe["text"] = "Describe"
-        self.describe["command"] = self.describeMovie
-        self.describe["bg"] = "#409dfa"
-        self.describe["fg"] = "black"
-        self.describe["state"] = "disabled"
-        self.describe.grid(row=2, column=3, padx=2, pady=2)
-
-        # Create a label to display the movie
-        self.label = Label(self.master, height=18, bg="#3eb489")
-        self.label.grid(row=0, column=0, columnspan=5, sticky=W + E + N + S, padx=5, pady=5)
-
-        # Create a label to display total time of the movie
-        self.totaltimeBox = Label(self.master, width=16, text="Total time: 00:00", bg="#3eb489")
-        self.totaltimeBox.grid(row=1, column=3, columnspan=1, padx=5, pady=5)
-
-        # Create a label to display remaining time of the movie
-
-        self.remainTimeBox = Label(self.master, width=16, text="Remaining time: 00:00", bg="#3eb489")
-        self.remainTimeBox.grid(row=1, column=0, columnspan=1, padx=5, pady=5)
-
-        # Create forward button
-        self.forward = Button(self.master, width=15, padx=3, pady=3, bg="#00EBC1", fg="black")
-        self.forward["text"] = "⫸⫸"
-        self.forward["command"] = self.forwardMovies
-        self.forward["state"] = "disabled"
-        self.forward.grid(row=1, column=2, padx=2, sticky=E + W, pady=2)
-
-        # Create backward button
+        # Create Backward button
         self.backward = Button(self.master, width=15, padx=3, pady=3, bg="#00EBC1", fg="black")
-        self.backward["text"] = "⫷⫷"
+        self.backward["text"] = "≪"
         self.backward["command"] = self.prevMovie
         self.backward["state"] = "disabled"
-        self.backward.grid(row=1, column=1, sticky=E + W, padx=2, pady=2)
+        self.backward.grid(row=2, column=1, sticky=E, padx=2, pady=2)
+
+        # Create Play button
+        self.start = Button(self.master, width=20, padx=3, pady=3, bg="#40A34A")
+        self.start["text"] = "▶"
+        self.start["command"] = self.playMovie
+        self.start.grid(row=2, column=2, sticky=E + W, padx=2, pady=2)
+
+        # Create Pause button
+        # self.pause = Button(self.master, width=20, padx=3, pady=3, bg="#E8DD68", fg="black")
+        # self.pause["text"] = "⏸"
+        # self.pause["command"] = self.pauseMovie
+        # self.pause.grid(row=2, column=2, sticky=E + W, padx=2, pady=2)
+
+        # Create Forward button
+        self.forward = Button(self.master, width=15, padx=3, pady=3, bg="#00EBC1", fg="black")
+        self.forward["text"] = "≫"
+        self.forward["command"] = self.forwardMovies
+        self.forward["state"] = "disabled"
+        self.forward.grid(row=2, column=3, sticky=W, padx=2, pady=2)
+
+        # Create Describe button
+        self.describe = Button(self.master, width=10, padx=3, pady=3, bg="#6492BD", fg="black")
+        self.describe["text"] = "⭐"
+        self.describe["command"] = self.describeMovie
+        self.describe["state"] = "disabled"
+        self.describe.grid(row=2, column=4, sticky=W, padx=2, pady=2)
+
+        # Create a label to display the movie
+        self.label = Label(self.master, height=19, bg="#3eb489")
+        self.label.grid(row=0, column=0, columnspan=5, sticky=W + E + N + S, padx=5, pady=5)
+
+        # Create a label to display Remaining Time of the movie
+        self.remainTimeBox = Label(self.master, width=20, text="Remaining time: 00:00", bg="#3eb489")
+        self.remainTimeBox.grid(row=1, column=1, columnspan=1, padx=5, pady=5)
+
+        # Create a label to display Total Time of the movie
+        self.totaltimeBox = Label(self.master, width=20, text="Total time: 00:00", bg="#3eb489")
+        self.totaltimeBox.grid(row=1, column=3, columnspan=1, padx=5, pady=5)
 
     def describeMovie(self):
         """Describe button handler"""
@@ -138,6 +130,7 @@ class ClientExtend:
         if self.state == self.INIT:
             self.sendRtspRequest(self.SETUP)
 
+        self.isSetup = 1
     def resetMovie(self):
         """Teardown button handler."""
         if self.checkPlay:
@@ -166,11 +159,17 @@ class ClientExtend:
             self.rtpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.label.pack_forget()
             self.label.image = ''
+            self.isSetup = 1
             # time.sleep(0.5)
             # self.setupMovie()
 
     def pauseMovie(self):
         """Pause button handler."""
+        self.start = Button(self.master, width=20, padx=3, pady=3, bg="#40A34A")
+        self.start["text"] = "▶"
+        self.start["command"] = self.playMovie
+        self.start.grid(row=2, column=2, sticky=E + W, padx=2, pady=2)
+
         if self.state == self.PLAYING:
             self.forward["state"] = "disabled"
             self.backward["state"] = "disabled"
@@ -178,6 +177,11 @@ class ClientExtend:
 
     def playMovie(self):
         """Play button handler."""
+        self.pause = Button(self.master, width=20, padx=3, pady=3, bg="#E8DD68", fg="black")
+        self.pause["text"] = "⏸"
+        self.pause["command"] = self.pauseMovie
+        self.pause.grid(row=2, column=2, sticky=E + W, padx=2, pady=2)
+
         if self.state == self.INIT and self.isFirstPlay == True:
             self.isFirstPlay = False
             self.checkPlay = True
@@ -197,16 +201,25 @@ class ClientExtend:
             while self.state != self.READY:
                 pass
 
-        self.forward["state"] = "normal"
-        self.backward["state"] = "normal"
-        self.describe["state"] = "normal"
+        # If as the first time press "Play" button in the session, we first need to setup movie
+        # if self.isSetup == 0:
+        #     self.setupMovie()
 
+        # If state == READY, the following operations will be implemented
         if self.state == self.READY:
-            self.checkPlay = True
+            # Enable Forward, Backward and Describe buttons
+            self.forward["state"] = "normal"
+            self.backward["state"] = "normal"
+            self.describe["state"] = "normal"
+
             # Create a new thread to listen for RTP packets
             threading.Thread(target=self.listenRtp).start()
+
+            # Initialize and clear an event object that is used to pause and resume the video playback in the client
             self.playEvent = threading.Event()
             self.playEvent.clear()
+
+            # Send an PLAY request to server
             self.sendRtspRequest(self.PLAY)
 
     def forwardMovies(self):
@@ -539,5 +552,3 @@ class ClientExtend:
         Lb2.insert(10, "Average Jitter: %.3fms" % ((self.totalJitter / self.packets) * 1000))
         Lb2.pack()
         # top1.mainloop()
-
-
