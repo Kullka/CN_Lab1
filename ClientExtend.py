@@ -71,7 +71,7 @@ class ClientExtend:
         """Build GUI."""
         # Create Play button
         self.start = Button(self.master, width=15, padx=3, pady=3)
-        self.start["text"] = "Play ▶"
+        self.start["text"] = "Play"
         self.start["bg"] = "#56ff6d"
         self.start["fg"] = "black"
         self.start["command"] = self.playMovie
@@ -79,7 +79,7 @@ class ClientExtend:
 
         # Create Pause button
         self.pause = Button(self.master, width=15, padx=3, pady=3)
-        self.pause["text"] = "Pause ⏸"
+        self.pause["text"] = "Pause"
         self.pause["bg"] = "#f8ed54"
         self.pause["fg"] = "black"
         self.pause["command"] = self.pauseMovie
@@ -87,7 +87,7 @@ class ClientExtend:
 
         # Create Teardown button
         self.stop = Button(self.master, width=15, padx=3, pady=3)
-        self.stop["text"] = "Stop ■"
+        self.stop["text"] = "Stop"
         self.stop["command"] = self.resetMovie
         self.stop["bg"] = "#e05927"
         self.stop["fg"] = "black"
@@ -95,7 +95,7 @@ class ClientExtend:
 
         # Create Setup button
         self.describe = Button(self.master, width=15, padx=3, pady=3)
-        self.describe["text"] = "Describe ★"
+        self.describe["text"] = "Describe"
         self.describe["command"] = self.describeMovie
         self.describe["bg"] = "#409dfa"
         self.describe["fg"] = "black"
@@ -103,16 +103,16 @@ class ClientExtend:
         self.describe.grid(row=2, column=3, padx=2, pady=2)
 
         # Create a label to display the movie
-        self.label = Label(self.master, height=18, bg="#A5D2EB")
+        self.label = Label(self.master, height=18, bg="#3eb489")
         self.label.grid(row=0, column=0, columnspan=5, sticky=W + E + N + S, padx=5, pady=5)
 
         # Create a label to display total time of the movie
-        self.totaltimeBox = Label(self.master, width=16, text="Total time: 00:00", bg="#A5D2EB")
+        self.totaltimeBox = Label(self.master, width=16, text="Total time: 00:00", bg="#3eb489")
         self.totaltimeBox.grid(row=1, column=3, columnspan=1, padx=5, pady=5)
 
         # Create a label to display remaining time of the movie
 
-        self.remainTimeBox = Label(self.master, width=16, text="Remaining time: 00:00", bg="#A5D2EB")
+        self.remainTimeBox = Label(self.master, width=16, text="Remaining time: 00:00", bg="#3eb489")
         self.remainTimeBox.grid(row=1, column=0, columnspan=1, padx=5, pady=5)
 
         # Create forward button
@@ -245,7 +245,7 @@ class ClientExtend:
                         # Update remaining time
                         self.totaltimeBox.configure(
                             text="Total time: %02d:%02d" % (self.totalTime // 60, self.totalTime % 60))
-                        self.remainTimeBox.configure(textm="Remaining time: %02d:%02d" % (
+                        self.remainTimeBox.configure(text="Remaining time: %02d:%02d" % (
                         (self.totalTime - self.currentTime) // 60, (self.totalTime - self.currentTime) % 60))
                     # version = rtpPacket.version()
 
@@ -539,3 +539,5 @@ class ClientExtend:
         Lb2.insert(10, "Average Jitter: %.3fms" % ((self.totalJitter / self.packets) * 1000))
         Lb2.pack()
         # top1.mainloop()
+
+
