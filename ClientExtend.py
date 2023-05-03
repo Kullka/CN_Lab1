@@ -73,7 +73,7 @@ class ClientExtend:
         # Create Play button
         self.stop = Button(self.master, width=10, padx=3, pady=3, bg="#FC8585")
         self.stop["text"] = "⬛"
-        self.stop["command"] = self.resetMovie
+        self.stop["command"] = self.exitClient
         self.stop.grid(row=2, column=0, padx=2, pady=2)
 
         # Create Backward button
@@ -131,7 +131,7 @@ class ClientExtend:
             self.sendRtspRequest(self.SETUP)
 
         self.isSetup = 1
-    def resetMovie(self):
+    def exitClient(self):
         """Teardown button handler."""
         if self.checkPlay:
             self.checkPlay = False

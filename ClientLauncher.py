@@ -28,6 +28,6 @@ if __name__ == "__main__":
 
         else:
             print('Vui long chon lai 1 hoac 2:')
-    app.master.title("Akatsuki Media Player (AMP)")
+    app.master.title("Computer Networking Media (CNM)")
     app.master.configure(bg="#A5D2EB")
     root.mainloop()
